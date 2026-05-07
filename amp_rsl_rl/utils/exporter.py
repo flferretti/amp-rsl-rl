@@ -8,7 +8,12 @@
 import copy
 import os
 import torch
-from amp_rsl_rl.networks import ActorMoE
+
+
+def _get_actor_moe_cls():
+    """Lazy import to avoid circular dependency with amp_rsl_rl.networks."""
+    from amp_rsl_rl.networks import ActorMoE
+    return ActorMoE
 
 
 def export_policy_as_onnx(
@@ -198,7 +203,7 @@ class _OnnxPolicyExporter(torch.nn.Module):
             if self._is_mlp_model:
                 # For MLPModel, get input dimension from the MLP's first layer
                 obs_dim = self.mlp[0].in_features
-            elif isinstance(self.actor, ActorMoE):
+            elif isinstance(self.actor, _get_actor_moe_cls()):
                 obs_dim = self.actor.obs_dim
             elif hasattr(self.actor, 'obs_dim'):
                 obs_dim = self.actor.obs_dim
